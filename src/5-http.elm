@@ -30,6 +30,7 @@ init topic =
 
 type Msg
   = MorePlease
+  | NewTopic String
   | FetchSucceed String
   | FetchFail Http.Error
 
@@ -38,6 +39,12 @@ update msg model =
   case msg of
     MorePlease ->
       (model, getRandomGif model.topic)
+
+    NewTopic newTopic ->
+      let
+        model = { model | topic = newTopic}
+      in
+        (model, Cmd.none)
 
     FetchSucceed newUrl ->
       (Model model.topic newUrl, Cmd.none)
@@ -51,6 +58,7 @@ view model  =
   div []
   [ h2 [] [text model.topic]
   , button [onClick MorePlease] [ text "More Please"]
+  , input [type' "topic", placeholder "New Topic", onInput NewTopic ][]
   , br [] []
   , img [src model.gifUrl] []
   ]
@@ -66,7 +74,6 @@ getRandomGif topic =
   let
     url =
       "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
-
   in
     Task.perform FetchFail FetchSucceed (Http.get decodeGifUrl url)
 
